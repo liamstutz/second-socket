@@ -1,0 +1,7 @@
+import {readFileSync,writeFileSync,mkdirSync,copyFileSync,existsSync} from 'node:fs';
+const read=p=>readFileSync(p,'utf8');
+const assetPaths={'/':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/triage.js':'triage.js'};
+const assets=Object.fromEntries(Object.entries(assetPaths).map(([url,file])=>[url,{body:read(file),type:file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'}]));
+const bundle=read('engine.js').replaceAll('export ','')+'\n'+read('triage.js').replaceAll('export ','')+'\n'+read('api.js').replaceAll('export ','')+`\nconst assets=${JSON.stringify(assets)};\nconst api=createApi({solve,orderBody,classify});\nexport default {async fetch(request,env){const path=new URL(request.url).pathname;if(path.startsWith('/api/'))return api(request,env);const asset=assets[path];if(!asset)return new Response('Not found',{status:404});return new Response(asset.body,{headers:{'content-type':asset.type,'X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin','Cache-Control':'no-cache'}});}};\n`;
+mkdirSync('dist/server',{recursive:true});mkdirSync('dist/.openai',{recursive:true});writeFileSync('dist/server/index.js',bundle);if(existsSync('.openai/hosting.json'))copyFileSync('.openai/hosting.json','dist/.openai/hosting.json');console.log('Built dependency-free Worker: '+Buffer.byteLength(bundle)+' bytes');
+

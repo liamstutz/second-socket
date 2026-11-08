@@ -1,0 +1,2 @@
+{"name":"second-socket","version":"1.0.0","private":true,"type":"module","description":"AI-assisted donor-part allocation with verified PayPal sandbox checkout","engines":{"node":">=22"},"scripts":{"build":"node build.mjs","start":"node server.mjs","test":"node --test engine.test.mjs"},"license":"MIT"}
+
